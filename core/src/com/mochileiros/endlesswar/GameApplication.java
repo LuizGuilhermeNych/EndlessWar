@@ -2,6 +2,7 @@ package com.mochileiros.endlesswar;
 
 import com.badlogic.gdx.Game;
 import com.mochileiros.endlesswar.cenas.GameScreen;
+import com.mochileiros.endlesswar.cenas.GameService;
 import com.mochileiros.endlesswar.cenas.LoadingScreen;
 import com.mochileiros.endlesswar.cenas.MenuScreen;
 
@@ -11,6 +12,8 @@ public class GameApplication extends Game {
 	private LoadingScreen loadingScreen;
 	private MenuScreen menuScreen;
 	private GameScreen gameScreen;
+
+	private GameService gameService;
 
 	// Índices que utilizamos para transitar entre as telas:
 	public final static int MENU = 0;
