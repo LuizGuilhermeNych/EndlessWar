@@ -10,6 +10,11 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -37,6 +42,13 @@ public class GameScreen implements Screen {
     private Viewport viewport;
     private float mapWidth, mapHeight;
     private float screenWidth, screenHeight;
+    
+    // Atributos para configuração da entidade do jogador
+    private World world;
+    private Body player;
+    private Box2DDebugRenderer b2dr;
+    
+    
 
     public GameScreen(GameApplication app){
         parent = app;
@@ -58,9 +70,64 @@ public class GameScreen implements Screen {
         gameLabel.setPosition(100, 100);
         gameLabel.setSize(200, 50);
         stage.addActor(gameLabel);
+        
+        // Cria e configura mundo e jogador
+        world = new World(new Vector2(0, -9.8f), false);
+        b2dr = new Box2DDebugRenderer();
+        player = createPlayer();
+        
     }
 
-    @Override
+    private Body createPlayer() {
+    	// Instancia do objeto player
+		Body pBody;
+		BodyDef def = new BodyDef();
+		
+		// Especificações físicas do objeto player
+		def.type = BodyDef.BodyType.DynamicBody;
+		def.position.set(300, 60);
+		def.fixedRotation = true;
+		pBody = world.createBody(def);
+		
+		// Formato do objeto
+		PolygonShape shape = new PolygonShape();
+		shape.setAsBox(32 / 2, 32 / 2);
+		
+		// Associando formato ao objeto
+		pBody.createFixture(shape, 1.0f);
+		shape.dispose();
+		return pBody;
+	}
+    
+    public void update(float delta) {
+    	world.step(1 / 60f, 6, 2);
+    	inputUpdate(delta);
+    }
+
+	private void inputUpdate(float delta) {
+		int horizontalForce = 0;
+		int verticalForce = 0;
+		
+		// Configuração de movimentação
+		if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+			horizontalForce -= 2;
+		}
+		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+			horizontalForce += 2;
+		}
+		if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+			verticalForce += 2;
+		}
+		if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+			verticalForce -= 2;
+		}
+		
+		// Assiciando controle ao objeto player
+		player.setLinearVelocity(horizontalForce * 10, verticalForce * 10);
+		
+	}
+
+	@Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
 
@@ -82,7 +149,8 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-
+    	update(delta);
+    	
         // Limpa a tela
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -94,6 +162,13 @@ public class GameScreen implements Screen {
             camera.position.x = screenWidth / 2f;
         } else if (cameraRight > mapWidth) {
             camera.position.x = mapWidth - screenWidth / 2f;
+        }
+        
+        if(Gdx.input.isKeyPressed(Input.Keys.A)) {
+        	camera.translate(-1, 0);
+        }
+        if(Gdx.input.isKeyPressed(Input.Keys.D)) {
+        	camera.translate(1, 0);
         }
 
         camera.zoom = 0.39f;
@@ -112,6 +187,8 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
             parent.changeScreen(GameApplication.MENU);
         }
+        
+        b2dr.render(world, camera.combined);
     }
 
     @Override
@@ -141,5 +218,7 @@ public class GameScreen implements Screen {
         skin.dispose();
         map.dispose();
         renderer.dispose();
+        b2dr.dispose();
+        world.dispose();
     }
 }
