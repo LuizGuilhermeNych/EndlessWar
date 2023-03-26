@@ -33,8 +33,8 @@ public class GameApplication extends Game {
 				this.setScreen(menuScreen);
 			break;
 			case GAME:
-				if (gameScreen == null) gameScreen = new GameScreen(this);
-				this.setScreen(gameScreen);
+				if (gameService == null) gameService = new GameService(this);
+				this.setScreen(gameService);
 			break;
 		}
 	}

@@ -1,66 +1,106 @@
 package com.mochileiros.endlesswar.services;
 
-import com.badlogic.gdx.maps.MapObject;
-import com.badlogic.gdx.maps.MapObjects;
-import com.badlogic.gdx.maps.objects.PolygonMapObject;
-import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.Shape;
-import com.mochileiros.endlesswar.cenas.GameScreen;
+import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
+import com.badlogic.gdx.physics.box2d.World;
 import com.mochileiros.endlesswar.cenas.GameService;
+import com.mochileiros.endlesswar.entities.Player;
 
-public class MapService{
+import static com.mochileiros.endlesswar.utils.Constants.PPM;
+import static com.mochileiros.endlesswar.utils.Constants.SCALE;
 
-    private TiledMap tiledMap;
-    private GameScreen gameScreen;
+public class MapService implements Screen {
 
-    public MapService(GameScreen gameScreen) {
-        this.gameScreen = gameScreen;
+    private GameService gameService;
+    public OrthographicCamera camera;
+    public World world;
+    private Box2DDebugRenderer b2dr;
+
+    private OrthogonalTiledMapRenderer renderer;
+    private TiledMap map;
+
+    public MapService(GameService app) {
+        this.gameService = app;
+        float w = Gdx.graphics.getWidth();
+        float h = Gdx.graphics.getHeight();
+
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, w / SCALE, h / SCALE);
+
+        world = new World(new Vector2(0, 0), false);
+        b2dr = new Box2DDebugRenderer();
+
+        map = new TmxMapLoader().load("stage_zero.tmx");
+        renderer = new OrthogonalTiledMapRenderer(map);
     }
 
-    public OrthogonalTiledMapRenderer setupMap() {
-        tiledMap = new TmxMapLoader().load("test_map.tmx");
-        parseMapObjects(tiledMap.getLayers().get("floor").getObjects());
-        return new OrthogonalTiledMapRenderer(tiledMap);
+
+    @Override
+    public void show() {
+
     }
 
-    private void parseMapObjects(MapObjects mapObjects) {
-        for(MapObject mapObject : mapObjects) {
-
-            if(mapObject instanceof PolygonMapObject) {
-                createStaticBody((PolygonMapObject) mapObject);
-            }
-        }
+    public void update(float delta){
+        world.step(1 / 60f, 6, 2);
+        cameraUpdate(delta, gameService.player);
+        renderer.setView(camera);
     }
 
-    private void createStaticBody(PolygonMapObject polygonMapObject) {
-        BodyDef bodyDef = new BodyDef();
-        bodyDef.type = BodyDef.BodyType.StaticBody;
-        Body body = gameScreen.getWorld().createBody(bodyDef);
+    public void cameraUpdate(float delta, Player player){
+        Vector3 position = camera.position;
 
-        Shape shape = createPolygonShape(polygonMapObject);
-        body.createFixture(shape, 1000);
-        shape.dispose();
+        position.x = gameService.player.body.getPosition().x * PPM;
+        position.y = gameService.player.body.getPosition().y * PPM;
+
+        camera.position.set(position);
+        camera.update();
     }
 
-    private Shape createPolygonShape(PolygonMapObject polygonMapObject) {
-        float[] vertices = polygonMapObject.getPolygon().getTransformedVertices();
-        Vector2[] worldVertices = new Vector2[vertices.length / 2];
+    @Override
+    public void render(float delta) {
+        update(Gdx.graphics.getDeltaTime());
 
-        for(int i = 0; i < vertices.length / 2; i++) {
-            Vector2 current = new Vector2(vertices[i * 2] / 32.0f, vertices[i * 2 + 1] / 32.0f);
-            worldVertices[i] = current;
-        }
+        Gdx.gl.glClearColor(0f, 0f, 0f, 1f);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        PolygonShape shape = new PolygonShape();
-        shape.set(worldVertices);
-        return shape;
+        renderer.render();
+
+        b2dr.render(world, camera.combined.scl(PPM));
+    }
+
+    @Override
+    public void resize(int width, int height) {
+        camera.setToOrtho(false, width / SCALE, height / SCALE);
+    }
+
+    @Override
+    public void pause() {
+
+    }
+
+    @Override
+    public void resume() {
+
+    }
+
+    @Override
+    public void hide() {
+
+    }
+
+    @Override
+    public void dispose() {
+        world.dispose();
+        b2dr.dispose();
+        renderer.dispose();
+        map.dispose();
     }
 }

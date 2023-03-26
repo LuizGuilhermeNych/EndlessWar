@@ -5,24 +5,24 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mochileiros.endlesswar.GameApplication;
+import com.mochileiros.endlesswar.entities.Player;
+
+import static com.mochileiros.endlesswar.utils.Constants.PPM;
 
 public class GameScreen implements Screen {
 
@@ -45,10 +45,10 @@ public class GameScreen implements Screen {
     
     // Atributos para configuração da entidade do jogador
     private World world;
-    private Body player;
     private Box2DDebugRenderer b2dr;
-    
-    
+    private Player player;
+    private SpriteBatch spriteBatch;
+    private float stateTime;
 
     public GameScreen(GameApplication app){
         parent = app;
@@ -64,7 +64,7 @@ public class GameScreen implements Screen {
 
         // Carrega o mapa
         mapLoader = new TmxMapLoader();
-        map = mapLoader.load("test_map.tmx");
+        map = mapLoader.load("stage_zero.tmx");
 
         // Configurando o ator no estágio
         gameLabel.setPosition(100, 100);
@@ -72,60 +72,17 @@ public class GameScreen implements Screen {
         stage.addActor(gameLabel);
         
         // Cria e configura mundo e jogador
-        world = new World(new Vector2(0, -9.8f), false);
+        world = new World(new Vector2(0, 0), false);
         b2dr = new Box2DDebugRenderer();
-        player = createPlayer();
-        
+        player = new Player(world);
+        spriteBatch = new SpriteBatch();
     }
-
-    private Body createPlayer() {
-    	// Instancia do objeto player
-		Body pBody;
-		BodyDef def = new BodyDef();
-		
-		// Especificações físicas do objeto player
-		def.type = BodyDef.BodyType.DynamicBody;
-		def.position.set(300, 60);
-		def.fixedRotation = true;
-		pBody = world.createBody(def);
-		
-		// Formato do objeto
-		PolygonShape shape = new PolygonShape();
-		shape.setAsBox(32 / 2, 32 / 2);
-		
-		// Associando formato ao objeto
-		pBody.createFixture(shape, 1.0f);
-		shape.dispose();
-		return pBody;
-	}
     
     public void update(float delta) {
     	world.step(1 / 60f, 6, 2);
-    	inputUpdate(delta);
+        stateTime += delta;
+        player.update(delta);
     }
-
-	private void inputUpdate(float delta) {
-		int horizontalForce = 0;
-		int verticalForce = 0;
-		
-		// Configuração de movimentação
-		if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-			horizontalForce -= 2;
-		}
-		if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-			horizontalForce += 2;
-		}
-		if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-			verticalForce += 2;
-		}
-		if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-			verticalForce -= 2;
-		}
-		
-		// Assiciando controle ao objeto player
-		player.setLinearVelocity(horizontalForce * 10, verticalForce * 10);
-		
-	}
 
 	@Override
     public void show() {
@@ -150,7 +107,7 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
     	update(delta);
-    	
+
         // Limpa a tela
         Gdx.gl.glClearColor(0, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -171,7 +128,7 @@ public class GameScreen implements Screen {
         	camera.translate(1, 0);
         }
 
-        camera.zoom = 0.39f;
+//        camera.zoom = 0.39f;
 
         // Configura a câmera
         camera.update();
@@ -187,7 +144,11 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
             parent.changeScreen(GameApplication.MENU);
         }
-        
+
+        spriteBatch.begin();
+        player.draw(spriteBatch);
+        spriteBatch.end();
+
         b2dr.render(world, camera.combined);
     }
 
