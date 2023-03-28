@@ -44,7 +44,7 @@ public class Player {
         def = new BodyDef();
 
         def.type = BodyDef.BodyType.DynamicBody;
-        def.position.set(0 / PPM, 0 / PPM);
+        def.position.set(300 / PPM, 80 / PPM);
         def.fixedRotation = true;
 
         body = world.createBody(def);

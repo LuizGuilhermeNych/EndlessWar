@@ -4,7 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -32,6 +35,13 @@ public class MenuScreen implements Screen {
         // Configura o ator
         startLabel.setPosition(100, 100);
         startLabel.setSize(200, 50);
+
+        Texture backgroundTex = new Texture(Gdx.files.internal("menuBackground.png"));
+        TextureRegion backgroundTexReg = new TextureRegion(backgroundTex, 720, 480);
+
+        Image background = new Image(backgroundTexReg);
+
+        stage.addActor(background);
         stage.addActor(startLabel);
     }
 
@@ -55,11 +65,14 @@ public class MenuScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
             parent.changeScreen(GameApplication.GAME);
         }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+            Gdx.app.exit();
+        }
     }
 
     @Override
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+//        stage.getViewport().update(width, height, true);
     }
 
     @Override

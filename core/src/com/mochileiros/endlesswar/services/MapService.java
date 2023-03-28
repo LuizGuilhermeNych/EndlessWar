@@ -13,6 +13,7 @@ import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.mochileiros.endlesswar.cenas.GameService;
 import com.mochileiros.endlesswar.entities.Player;
+import com.mochileiros.endlesswar.utils.OrthogonalTiledMapRendererBleeding;
 
 import static com.mochileiros.endlesswar.utils.Constants.PPM;
 import static com.mochileiros.endlesswar.utils.Constants.SCALE;
@@ -24,7 +25,7 @@ public class MapService implements Screen {
     public World world;
     private Box2DDebugRenderer b2dr;
 
-    private OrthogonalTiledMapRenderer renderer;
+    private OrthogonalTiledMapRendererBleeding renderer;
     private TiledMap map;
 
     public MapService(GameService app) {
@@ -39,7 +40,7 @@ public class MapService implements Screen {
         b2dr = new Box2DDebugRenderer();
 
         map = new TmxMapLoader().load("stage_zero.tmx");
-        renderer = new OrthogonalTiledMapRenderer(map);
+        renderer = new OrthogonalTiledMapRendererBleeding(map, 1 / 1f);
     }
 
 

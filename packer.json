@@ -1,0 +1,13 @@
+{
+    "platform": "windows64",
+    "jdk": "/usr/lib/jvm/java-1.11.0-openjdk-amd64",
+    "executable": "endlesswar",
+    "classpath": [
+        "/home/luiz/Documentos/LibGDX/EndlessWar/core/build/libs"
+    ],
+    "mainclass": "com.mochileiros.endlesswar.GameApplication",
+    "vmargs": [
+       "Xmx1G"
+    ],
+    "output": "/home/luiz/Documentos/LibGDX/EndlessWar/outputPackage"
+}

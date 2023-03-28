@@ -1,5 +1,7 @@
 package com.mochileiros.endlesswar.cenas;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mochileiros.endlesswar.GameApplication;
@@ -23,6 +25,7 @@ public class GameService implements Screen {
     @Override
     public void show() {
         System.out.println("GameService...");
+
     }
 
     public void update(float delta){
@@ -38,6 +41,10 @@ public class GameService implements Screen {
         spriteBatch.begin();
         player.draw(spriteBatch);
         spriteBatch.end();
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
+            parent.changeScreen(GameApplication.MENU);
+        }
     }
 
     @Override
